@@ -1,0 +1,24 @@
+[project]
+name = "jepastudy"
+version = "0.1.0"
+description = "JEPA study notebooks for ICRA paper research"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "torchvision",
+    "matplotlib",
+    "numpy",
+    "jupyter",
+    "nbconvert",
+    "ipykernel",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }

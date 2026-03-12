@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Reference repos (cloned separately)
+refs/
+
+# Executed notebook outputs (regenerated via `uv run jupyter nbconvert --execute`)
+notebooks/*_executed.ipynb
+
+# uv placeholder
+main.py
