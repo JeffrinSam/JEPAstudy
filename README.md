@@ -1,297 +1,179 @@
-# JEPA Study Guide for Robotics, VLAs, and Safe AI
+# JEPA Study Guide: From Fundamentals to ICRA Research
 
-A beginner-friendly learning path for understanding JEPA (Joint Embedding Predictive Architecture)
-and its applications in robotics, video prediction, VLA models, and safe humanoid control.
+A comprehensive, hands-on learning path for understanding **JEPA** (Joint Embedding Predictive Architecture) and its applications in robotics, VLA models, video prediction, and safe humanoid control.
 
----
-
-## Learning Path Overview
-
-```
-Phase 1: Foundations (weeks 1-3)
-  |- Self-supervised learning basics
-  |- Contrastive learning vs generative models
-  |- Vision Transformers (ViT)
-  |
-Phase 2: JEPA Core (weeks 3-5)
-  |- LeCun's vision paper
-  |- I-JEPA (images)
-  |- V-JEPA / V-JEPA 2 (video)
-  |
-Phase 3: Robotics + World Models (weeks 5-8)
-  |- World models concept
-  |- V-JEPA 2-AC (action-conditioned)
-  |- VLA models (RT-2, Octo, OpenVLA, pi0)
-  |- JEPA-VLA integration
-  |
-Phase 4: Safe Control for Humanoids (weeks 8-10)
-  |- Control theory basics
-  |- Control Barrier Functions (CBFs)
-  |- Neural CBFs
-  |- SHIELD / CBF-RL for humanoids
-  |- Integrating safety with learned representations
-```
+**5 interactive Jupyter notebooks** with 180+ cells, 80+ visualizations (2D/3D/4D/5D), runnable toy models, layer-by-layer analysis, formal math, layman analogies, and complete 5W+1H glossaries for every key term.
 
 ---
 
-## Phase 1: Foundations
+## What's Inside
 
-### What you need to know first
+### Notebooks
 
-**Self-Supervised Learning (SSL):**
-SSL trains models on unlabeled data by creating "pretext tasks" -- e.g., masking parts
-of an image and predicting what's missing. This is how JEPA learns.
+| # | Notebook | Cells | Topics | Key Visualizations |
+|---|----------|-------|--------|--------------------|
+| 01 | **JEPA Fundamentals** | 52 | JEPA objective, L1 loss, EMA, masking, training loop | Loss landscapes (3D), t-SNE/PCA (2D+3D), ablation heatmaps, 4D/5D hyperparameter analysis, gradient flow, information theory |
+| 02 | **V-JEPA 2 Architecture** | 43 | ViT encoder, 3D RoPE, SwiGLU, predictor, attention | Multi-head attention maps (per head per layer), 3D patch embeddings, RoPE frequency spectrum, CKA similarity, token trajectories (2D+3D), 5D architecture search |
+| 03 | **V-JEPA 2-AC World Model** | 34 | Action conditioning, causal attention, CEM planning | ACBlock trace, step-by-step causal mask, 3D rollout quality, action embedding space (PCA/t-SNE), 4D/5D performance surfaces |
+| 04 | **VLA-JEPA Integration** | 28 | JEPA-VLA, VLA-JEPA, flow matching, benchmarks | End-to-end pipeline trace, fusion comparison (4 methods), flow matching vector fields (2D+3D), multi-modal action distributions, 5D scaling laws |
+| 05 | **ICRA Research Gaps** | 29 | 4 paper ideas, CBF safety, unified architecture | CBF safety contours + 3D surface, Unified JEPA-VLA implementation, ablation study design, radar charts, research landscape gap analysis |
 
-**Three families of SSL (and why JEPA is different):**
+### What Makes This Different
 
-| Approach           | How it learns                          | Limitation                        |
-|--------------------|----------------------------------------|-----------------------------------|
-| Generative         | Reconstruct pixels (MAE, GPT, VAE)    | Wastes capacity on irrelevant details |
-| Contrastive        | Pull similar, push different (SimCLR, CLIP) | Needs careful augmentations    |
-| **JEPA**           | **Predict in latent space**            | **Newer, still being explored**   |
-
-**Vision Transformers (ViT):**
-JEPA uses ViT as its backbone. A ViT splits an image into patches, treats each patch
-like a "word", and processes them with a transformer.
-
-### Beginner resources
-- 3Blue1Brown: "Neural Networks" series on YouTube
-- Andrej Karpathy: "Let's build GPT from scratch" (for transformer intuition)
-- Lilian Weng's blog: "Self-Supervised Representation Learning"
-  https://lilianweng.github.io/posts/2019-11-10-self-supervised/
-- ViT paper (read the intro + figures): https://arxiv.org/abs/2010.11929
+- **Layer-by-layer analysis**: Trace every tensor through every computation step with shape, mean, std, norm
+- **5W+1H for every term**: Who, What, Where, When, Why, How + layman analogy for 30+ terms
+- **Multi-dimensional visualizations**: 2D scatter, 3D surface, 4D (color+size), 5D (parallel coordinates)
+- **Formal math + intuition**: LaTeX equations alongside plain-English explanations
+- **Runnable on CPU**: All notebooks execute on CPU with toy models (no GPU required for learning)
+- **ICRA paper ready**: Complete architecture code, ablation study designs, and compute planning
 
 ---
 
-## Phase 2: JEPA Core
+## Quick Start
 
-### The Big Idea
+```bash
+# Clone
+git clone <this-repo>
+cd JEPAstudy
 
-JEPA predicts **abstract representations** of missing content, NOT the raw pixels.
+# Setup (using uv)
+uv venv --python 3.11
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+uv pip install numpy matplotlib scikit-learn scipy jupyter nbconvert
 
+# Run notebooks
+jupyter notebook notebooks/
 ```
-Traditional (MAE):    Image -> Mask patches -> Predict PIXELS of masked patches
-JEPA:                 Image -> Mask patches -> Predict REPRESENTATIONS of masked patches
-                                                (in a learned latent space)
-```
 
-Why does this matter? Because the real world is full of unpredictable details (exact
-texture of grass, precise water ripple pattern). By predicting in latent space, JEPA
-can focus on what's *semantically important* and ignore noise.
-
-### Key Papers (read in this order)
-
-1. **LeCun's Vision Paper** (2022) -- Read Sections 1-4 only to start
-   "A Path Towards Autonomous Machine Intelligence"
-   https://openreview.net/pdf?id=BZ5a1r-kVsf
-   - Introduces the 6-module architecture: perception, world model, cost, memory, actor, configurator
-   - JEPA is the foundation for the **world model** module
-
-2. **I-JEPA** (2023) -- The image version
-   https://arxiv.org/abs/2301.08243
-   GitHub: https://github.com/facebookresearch/ijepa
-   - Predicts representations of masked image blocks from visible context
-   - No pixel reconstruction, no hand-crafted augmentations
-
-3. **V-JEPA** (2024) -- Extended to video
-   Blog: https://ai.meta.com/blog/v-jepa-yann-lecun-ai-model-video-joint-embedding-predictive-architecture/
-   GitHub: https://github.com/facebookresearch/jepa
-
-4. **V-JEPA 2** (2025) -- The big one: 1M+ hours of video, zero-shot robotics
-   https://arxiv.org/abs/2506.09985
-   GitHub: https://github.com/facebookresearch/vjepa2
-
-5. **VL-JEPA** (2025) -- Vision-Language JEPA
-   https://arxiv.org/abs/2512.10942
-
-### Hands-on
-- **EB-JEPA** (Educational examples): https://github.com/facebookresearch/eb_jepa
-  Includes a simple action-conditioned video JEPA for a 2D navigation task.
-  **Start here for code.**
+### Prerequisites
+- Python 3.11+
+- No GPU required (all examples use CPU-runnable toy models)
+- ~2GB disk space
 
 ---
 
-## Phase 3: Robotics + World Models
-
-### What is a World Model?
-
-A world model predicts "what happens next" given the current state and an action.
-Think of it as an internal simulation of the world.
+## Learning Path
 
 ```
-State(t) + Action(t) --> World Model --> Predicted State(t+1)
-```
+Phase 1: JEPA Fundamentals (Notebook 01)
+  |- What is JEPA? Why predict in latent space?
+  |- Build a toy JEPA from scratch
+  |- Understand EMA, stop-gradient, L1 loss
+  |- Visualize: loss landscape, representations, ablations
 
-JEPA does this in **latent space** (fast, abstract) instead of **pixel space** (slow, detailed).
+Phase 2: V-JEPA 2 Architecture (Notebook 02)
+  |- How does the ViT encoder work?
+  |- 3D RoPE for video position encoding
+  |- SwiGLU activation, multi-head attention
+  |- Trace tensors through every layer
 
-### V-JEPA 2-AC: JEPA as a Robot World Model
+Phase 3: World Models for Robotics (Notebook 03)
+  |- Action-conditioned prediction
+  |- Teacher-forcing vs autoregressive training
+  |- CEM planning in latent space
+  |- Causal attention masks
 
-- Pre-trained on internet video (general physics understanding)
-- Post-trained on just 62 hours of unlabeled robot video
-- Plans by searching action sequences in latent space
-- 80% success on pick-and-place vs 15% for Octo (a VLA model)
-- 16 seconds per plan vs 4 minutes for pixel-based planners (Cosmos)
+Phase 4: JEPA + VLA Integration (Notebook 04)
+  |- JEPA-VLA: feature injection approach
+  |- VLA-JEPA: world model approach
+  |- Flow matching for action generation
+  |- End-to-end pipeline analysis
 
-### VLA (Vision-Language-Action) Models
-
-VLAs combine a vision encoder + language model + action decoder to create robots
-that follow language instructions.
-
-```
-"Pick up the red cup" + Camera Image --> VLA --> Robot Joint Commands
-```
-
-**Key models (beginner-friendly order):**
-
-| Model     | Size  | Who         | Key Innovation                     | Open Source |
-|-----------|-------|-------------|------------------------------------|-------------|
-| RT-2      | 55B   | Google      | First VLA, actions as text tokens  | No          |
-| Octo      | 93M   | Berkeley    | Lightweight, diffusion actions     | Yes         |
-| OpenVLA   | 7B    | Stanford    | Open-source, strong performance    | Yes         |
-| pi0       | 3B    | Phys. Intel.| Flow matching, 50Hz actions       | Yes         |
-
-**Repos to explore:**
-- OpenVLA: https://github.com/openvla/openvla
-- Octo: https://github.com/octo-models/octo
-- pi0 (OpenPi): https://github.com/Physical-Intelligence/openpi
-
-### JEPA + VLA Integration (2026 frontier)
-
-Two recent papers show that adding JEPA features to VLAs improves performance:
-- **JEPA-VLA**: https://arxiv.org/abs/2602.11832
-- **VLA-JEPA**: https://arxiv.org/abs/2602.10098
-
----
-
-## Phase 4: Safe Control for Humanoids
-
-### Control Barrier Functions (CBFs) -- The Basics
-
-A CBF defines a "safe zone" for a robot. Think of it as an invisible fence:
-- The robot can do whatever it wants INSIDE the fence
-- If it tries to cross the fence, the CBF **minimally adjusts** the command to keep it safe
-
-```
-Desired Action --> [CBF Safety Filter] --> Safe Action
-                    (only modifies if unsafe)
-```
-
-Mathematically, a CBF h(x) satisfies: h(x) >= 0 means "safe". The filter solves a
-small optimization problem (QP) to find the closest safe action to the desired one.
-
-### Why CBFs for Humanoids?
-
-Humanoid robots trained with RL can walk, run, and manipulate -- but RL gives no
-formal safety guarantees. A humanoid falling over or colliding with a person is
-dangerous. CBFs add a provable safety layer on top of learned policies.
-
-### Key Approaches
-
-**Neural CBFs** (for complex systems where hand-designing CBFs is impossible):
-- BarrierNet: Differentiable CBF layer inside neural networks
-  https://github.com/Weixy21/BarrierNet
-- Policy Neural CBF: https://arxiv.org/abs/2310.15478
-
-**CBFs for Humanoid Robots:**
-- **SHIELD** (2025): CBF safety layer for humanoid RL locomotion on Unitree G1
-  https://arxiv.org/abs/2505.11494
-- **CBF-RL** (2025): Safety filtering during RL training for humanoids
-  https://arxiv.org/abs/2510.14959
-
-### The Future: JEPA + VLA + CBF
-
-The frontier is combining all three:
-1. **JEPA world model** -- understands physics from video
-2. **VLA** -- follows language instructions
-3. **CBF safety filter** -- guarantees safe execution
-
-```
-"Hand me the cup"
-       |
-   [VLA Policy] --> desired action
-       |                  |
-   [JEPA World Model]  [CBF Safety Filter]
-   (predicts outcomes)  (ensures safety)
-       |                  |
-       +---> Safe, Informed Robot Action
+Phase 5: ICRA Research (Notebook 05)
+  |- 4 paper ideas with motivation
+  |- Recommended: Unified JEPA-VLA
+  |- CBF safety in latent space
+  |- Compute planning for your hardware
 ```
 
 ---
 
-## Recommended Study Order for Beginners
+## Key Concepts at a Glance
 
-### Week 1-2: Get the intuition
-- [ ] Watch 3Blue1Brown neural network series
-- [ ] Read Lilian Weng's SSL blog post
-- [ ] Watch any YouTube explainer on Vision Transformers
-- [ ] Read LeCun's vision paper (Sections 1-4)
-
-### Week 3-4: Understand JEPA
-- [ ] Read I-JEPA paper (focus on Figures 1-3 and Section 3)
-- [ ] Read V-JEPA blog post from Meta AI
-- [ ] Clone and run EB-JEPA examples
-- [ ] Read V-JEPA 2 paper
-
-### Week 5-6: World models + robotics
-- [ ] Understand V-JEPA 2-AC results
-- [ ] Read OpenVLA paper (intro + experiments)
-- [ ] Read Octo paper (intro + architecture)
-- [ ] Explore pi0/OpenPi repo
-
-### Week 7-8: VLA + JEPA integration
-- [ ] Read JEPA-VLA paper
-- [ ] Read VLA-JEPA paper
-- [ ] Study the JEPA world model studies: https://github.com/facebookresearch/jepa-wms
-
-### Week 9-10: Safe control
-- [ ] Learn CBF basics (start with BarrierNet paper intro)
-- [ ] Read SHIELD paper
-- [ ] Read CBF-RL paper
-- [ ] Think about how CBFs could work in JEPA's latent space
+| Concept | One-Liner | Notebook |
+|---------|-----------|----------|
+| **JEPA** | Predict representations, not pixels | 01 |
+| **EMA** | Slowly update target encoder for stable training | 01 |
+| **Stop-Gradient** | Prevent representation collapse | 01 |
+| **3D RoPE** | Encode video position through rotation | 02 |
+| **SwiGLU** | Gated activation function for better FFNs | 02 |
+| **World Model** | Predict future states given actions | 03 |
+| **Teacher-Forcing** | Train with ground-truth inputs | 03 |
+| **CEM Planning** | Find best actions by sampling + refining | 03 |
+| **Flow Matching** | Generate actions by denoising noise | 04 |
+| **VLA** | Vision + Language + Action for robots | 04 |
+| **CBF** | Mathematical safety guarantee | 05 |
 
 ---
 
-## Key GitHub Repos
+## Visualization Gallery
 
-### JEPA
-| Repo | Description |
-|------|-------------|
-| [facebookresearch/ijepa](https://github.com/facebookresearch/ijepa) | I-JEPA official |
-| [facebookresearch/jepa](https://github.com/facebookresearch/jepa) | V-JEPA official |
-| [facebookresearch/vjepa2](https://github.com/facebookresearch/vjepa2) | V-JEPA 2 + robotics |
-| [facebookresearch/eb_jepa](https://github.com/facebookresearch/eb_jepa) | Educational examples (START HERE) |
-| [facebookresearch/jepa-wms](https://github.com/facebookresearch/jepa-wms) | World model studies |
+The notebooks contain 80+ visualizations across multiple dimensions:
 
-### VLA Models
-| Repo | Description |
-|------|-------------|
-| [openvla/openvla](https://github.com/openvla/openvla) | OpenVLA 7B |
-| [octo-models/octo](https://github.com/octo-models/octo) | Octo generalist policy |
-| [Physical-Intelligence/openpi](https://github.com/Physical-Intelligence/openpi) | pi0 family |
-
-### Safety / CBF
-| Repo | Description |
-|------|-------------|
-| [Weixy21/BarrierNet](https://github.com/Weixy21/BarrierNet) | Differentiable CBFs |
-| [awesome-humanoid-robot-learning](https://github.com/YanjieZe/awesome-humanoid-robot-learning) | Curated paper list |
+**2D**: Attention heatmaps, loss curves, t-SNE scatter, cosine similarity matrices, contour plots
+**3D**: Loss landscape surfaces, patch embeddings, token trajectories, CEM energy landscapes, CBF surfaces, rollout quality
+**4D**: 3D scatter with color (4th dim), animated training evolution, faceted heatmap grids
+**5D**: Parallel coordinates, 3D scatter with color + size, Pareto frontiers
 
 ---
 
-## Glossary
+## Reference Code
 
-| Term | Meaning |
-|------|---------|
-| **JEPA** | Joint Embedding Predictive Architecture -- predicts representations, not pixels |
-| **I-JEPA** | Image JEPA -- applies JEPA to static images |
-| **V-JEPA** | Video JEPA -- applies JEPA to video sequences |
-| **VLA** | Vision-Language-Action model -- robot policy conditioned on language + vision |
-| **CBF** | Control Barrier Function -- mathematical safety guarantee for control systems |
-| **World Model** | Internal model that predicts future states given current state + action |
-| **Latent Space** | Compressed, abstract representation space (vs raw pixel space) |
-| **ViT** | Vision Transformer -- processes images as sequences of patches |
-| **Flow Matching** | Generative method for smooth continuous outputs (used in pi0) |
-| **Diffusion** | Iterative denoising method for generating actions/images (used in Octo) |
-| **EMA** | Exponential Moving Average -- used to update target encoder in JEPA |
-| **QP** | Quadratic Program -- optimization used to enforce CBF safety constraints |
-| **SSL** | Self-Supervised Learning -- learning from unlabeled data |
-| **RL** | Reinforcement Learning -- learning from rewards/penalties |
+This repo includes cloned reference implementations:
+
+| Directory | Source | Description |
+|-----------|--------|-------------|
+| `refs/vjepa2/` | [facebookresearch/vjepa2](https://github.com/facebookresearch/vjepa2) | V-JEPA 2 encoder, predictor, AC world model |
+| `refs/VLA-JEPA/` | [ginwind/VLA-JEPA](https://github.com/ginwind/VLA-JEPA) | VLA-JEPA open-source implementation |
+
+---
+
+## ICRA Paper Direction
+
+Notebook 05 proposes 4 paper ideas. The recommended direction:
+
+**"Unified JEPA-VLA: Combining Feature Injection and World Models for Robot Manipulation"**
+
+- Combines JEPA-VLA (better features) + VLA-JEPA (planning via world model)
+- Complete architecture implementation in Notebook 05
+- Ablation study design with expected LIBERO benchmark results
+- Feasible on AMD Radeon RX 6700S (8GB VRAM) using V-JEPA 2-Small
+
+---
+
+## Key Papers
+
+| Paper | Year | Link |
+|-------|------|------|
+| A Path Towards Autonomous Machine Intelligence (LeCun) | 2022 | [OpenReview](https://openreview.net/pdf?id=BZ5a1r-kVsf) |
+| I-JEPA | 2023 | [arXiv:2301.08243](https://arxiv.org/abs/2301.08243) |
+| V-JEPA | 2024 | [Meta AI Blog](https://ai.meta.com/blog/v-jepa-yann-lecun-ai-model-video-joint-embedding-predictive-architecture/) |
+| V-JEPA 2 | 2025 | [arXiv:2506.09985](https://arxiv.org/abs/2506.09985) |
+| JEPA-VLA | 2026 | [arXiv:2602.11832](https://arxiv.org/abs/2602.11832) |
+| VLA-JEPA | 2026 | [arXiv:2602.10098](https://arxiv.org/abs/2602.10098) |
+
+---
+
+## Project Structure
+
+```
+JEPAstudy/
+  README.md                              # This file
+  pyproject.toml                         # Python project config
+  notebooks/
+    01_JEPA_Fundamentals.ipynb           # 52 cells - JEPA from scratch
+    02_VJEPA2_Architecture.ipynb         # 43 cells - ViT deep dive
+    03_VJEPA2_AC_WorldModel.ipynb        # 34 cells - Action-conditioned world model
+    04_VLA_JEPA_Integration.ipynb        # 28 cells - JEPA + VLA integration
+    05_ICRA_Research_Gaps.ipynb          # 29 cells - Research gaps & paper ideas
+  refs/
+    vjepa2/                              # V-JEPA 2 source code
+    VLA-JEPA/                            # VLA-JEPA implementation
+```
+
+---
+
+## License
+
+This study guide is for educational and research purposes. Reference code in `refs/` retains its original licenses.
