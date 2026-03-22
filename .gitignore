@@ -17,3 +17,4 @@ notebooks/*_executed.ipynb
 
 # uv placeholder
 main.py
+.claude/
