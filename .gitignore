@@ -7,13 +7,19 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
 
 # Reference repos (cloned separately)
 refs/
 
 # Executed notebook outputs (regenerated via `uv run jupyter nbconvert --execute`)
 notebooks/*_executed.ipynb
+
+# Archive (temp scripts, old outputs)
+archive/
 
 # uv placeholder
 main.py
