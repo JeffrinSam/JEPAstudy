@@ -686,3 +686,13 @@ Notebook 05 proposes 4 paper ideas. The recommended direction:
 ## License
 
 This study guide is for educational and research purposes. Reference code in `refs/` retains its original licenses (CC-BY-NC for V-JEPA 2, MIT for VLA-JEPA).
+
+## Connect
+
+If this curriculum helped you, consider giving the repository a star and following along for more content.
+
+- **Huggy Git (Hugging Face):** [huggingface.co/JeffrinSam](https://huggingface.co/JeffrinSam)
+- **Website:** [jeffrinsam.github.io](https://jeffrinsam.github.io/)
+- **GitHub:** [@JeffrinSam](https://github.com/JeffrinSam)
+
+New notebooks, research notes, and project updates are posted there as the curriculum evolves. If you are studying Safe RL, JEPA, or VLA models, subscribe to stay current with the latest additions.
